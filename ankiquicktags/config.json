@@ -1,0 +1,10 @@
+{
+    "tags": [
+        "my-common-tag1",
+        "my-common-tag2",
+        "my-common-tag3",
+        "my-common-tag4"
+    ],
+    "show-other-tags": true,
+    "other-tags-limit": 10
+}
