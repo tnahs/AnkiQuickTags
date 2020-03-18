@@ -73,6 +73,8 @@ class AnkiQuickTags:
         action.setCheckable(True)
         action.setChecked(self._note.hasTag(tag))
 
+        # TODO: Dont hide menu until clicked off... Allow the user to check
+        # more than one tag at a time.
         action.toggled.connect(functools.partial(self.action__toggle_tag, tag=tag))
 
         if shortcut is not None:
