@@ -1,10 +1,22 @@
 {
-    "tags": [
-        "my-common-tag1",
-        "my-common-tag2",
-        "my-common-tag3",
-        "my-common-tag4"
+    "quick-tags": [
+        {
+            "name": "quick-tag-1",
+            "shortcut": "ctrl+s"
+        },
+        {
+            "name": "quick-tag-2",
+            "shortcut": "ctrl+d"
+        },
+        {
+            "name": "quick-tag-3",
+            "shortcut": "ctrl+f"
+        },
+        {
+            "name": "quick-tag-4",
+            "shortcut": "ctrl+g"
+        }
     ],
-    "show-other-tags": true,
-    "other-tags-limit": 10
+    "additional-tags": true,
+    "additional-tags-limit": 10
 }
