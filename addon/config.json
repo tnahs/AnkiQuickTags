@@ -1,0 +1,12 @@
+{
+    "quick-tags": [
+        {
+            "name": "quick-tag-1",
+            "shortcut": "Ctrl+Alt+T"
+        }
+    ],
+    "other-tags": {
+        "visible": true,
+        "limit": 10
+    }
+}
