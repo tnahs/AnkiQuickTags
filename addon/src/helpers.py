@@ -4,9 +4,7 @@ import pathlib
 
 class Key:
     CONFIG_JSON = (
-        "config.json"
-        if not os.environ.get("ANKI_ADDON_DEV", False)
-        else "config_dev.json"
+        "config.json" if "ANKI_ADDON_DEV" not in os.environ else "config_dev.json"
     )
     QUICK_TAGS = "quick-tags"
     NAME = "name"

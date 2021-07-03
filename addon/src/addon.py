@@ -6,7 +6,7 @@ import anki.notes
 import aqt
 import aqt.gui_hooks
 import aqt.utils
-import aqt.webview
+from aqt.webview import AnkiWebView
 from PyQt5.QtWidgets import QAction, QMenu
 
 from .config import Config
@@ -59,7 +59,7 @@ class AnkiQuickTags:
 
     def setup(self) -> None:
         def hook__append_context_menu(
-            _: aqt.webview.AnkiWebView, context_menu: QMenu
+            webview: AnkiWebView, context_menu: QMenu
         ) -> None:
 
             if aqt.mw.state != Key.REVIEW:
