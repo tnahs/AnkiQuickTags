@@ -2,17 +2,24 @@ import os
 import pathlib
 
 
+class ConfigError(Exception):
+    pass
+
+
 class Key:
-    CONFIG_JSON = (
-        "config.json" if "ANKI_ADDON_DEV" not in os.environ else "config_dev.json"
-    )
-    QUICK_TAGS = "quick-tags"
-    NAME = "name"
-    SHORTCUT = "shortcut"
-    OTHER_TAGS = "other-tags"
-    VISIBLE = "visible"
     LIMIT = "limit"
+    NAME = "name"
+    OTHER_TAGS = "other-tags"
+    QUICK_TAGS = "quick-tags"
     REVIEW = "review"
+    SHORTCUT = "shortcut"
+    TAGS_JSON = "tags.json"
+    USER_FILES = (
+        "user_files"
+        if "ANKI_ADDON_DEVELOPMENT" not in os.environ
+        else "user_files__dev"
+    )
+    VISIBLE = "visible"
 
 
 class Defaults:
@@ -20,12 +27,10 @@ class Defaults:
 
     # [/absolute/path/to/addon]
     ADDON_ROOT = pathlib.Path(__file__).parent.parent
-    # [/absolute/path/to/addon]/config.json
-    CONFIG_JSON = ADDON_ROOT / Key.CONFIG_JSON
+    # [/absolute/path/to/addon]/user_files
+    USER_FILES = ADDON_ROOT / Key.USER_FILES
+    # [/absolute/path/to/addon]/user_files/tags.json
+    TAGS_JSON = USER_FILES / Key.TAGS_JSON
 
     OTHER_TAGS_VISIBLE = True
     OTHER_TAGS_LIMIT = 10
-
-
-class ConfigError(Exception):
-    pass

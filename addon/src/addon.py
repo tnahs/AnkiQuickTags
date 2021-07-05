@@ -1,11 +1,10 @@
 import functools
 from typing import Callable, List, Tuple
 
-import anki
-import anki.notes
 import aqt
 import aqt.gui_hooks
 import aqt.utils
+from anki.notes import Note
 from aqt.webview import AnkiWebView
 from PyQt5.QtWidgets import QAction, QMenu
 
@@ -22,60 +21,51 @@ class AnkiQuickTags:
         return self.__config
 
     @property
-    def note(self) -> anki.notes.Note:
-        return aqt.mw.reviewer.card.note()
-
-    @property
-    def all_tags(self) -> List[str]:
-        return sorted(aqt.mw.col.tags.all())
-
-    @property
-    def note_tags(self) -> List[str]:
-        return sorted(self.note.tags)
-
-    @property
-    def quick_tags(self) -> List[str]:
-        return sorted([tag for (tag, _) in self.config.quick_tags])
-
-    @property
     def other_tags(self) -> List[str]:
 
-        other_tags = sorted(
-            [tag for tag in self.all_tags if tag not in self.quick_tags]
-        )
+        all_tags = aqt.mw.col.tags.all()  # type: ignore
+        quick_tags = [tag.name for tag in self.config.quick_tags]
+        other_tags = sorted([tag for tag in all_tags if tag not in quick_tags])
 
         return other_tags[: self.config.other_tags_limit]
 
-    def action__toggle_tag(self, tag: str) -> None:
+    @property
+    def current_note(self) -> Note:
+        return aqt.mw.reviewer.card.note()  # type: ignore
 
-        if self.note.hasTag(tag):
-            self.note.delTag(tag)
-            aqt.utils.tooltip(f"Removed '{tag}'...")
+    def action__toggle_tag(self, tag_name: str) -> None:
+
+        if self.current_note.hasTag(tag_name):
+            self.current_note.delTag(tag_name)
+            aqt.utils.tooltip(f"Removed '{tag_name}'...")
         else:
-            self.note.addTag(tag)
-            aqt.utils.tooltip(f"Added '{tag}'...")
+            self.current_note.addTag(tag_name)
+            aqt.utils.tooltip(f"Added '{tag_name}'...")
 
-        self.note.flush()
+        self.current_note.flush()
 
     def setup(self) -> None:
         def hook__append_context_menu(
             webview: AnkiWebView, context_menu: QMenu
         ) -> None:
 
-            if aqt.mw.state != Key.REVIEW:
+            if aqt.mw.state != Key.REVIEW:  # type: ignore
                 return
 
-            self.config.load()
+            self.config.reload()
 
             context_menu.addSeparator()
 
-            for tag in self.quick_tags:
+            for tag in self.config.quick_tags:
 
-                action = QAction(tag, context_menu)
+                action = QAction(tag.name, context_menu)
                 action.setCheckable(True)
-                action.setChecked(self.note.hasTag(tag))
+                action.setChecked(self.current_note.hasTag(tag.name))
                 action.toggled.connect(
-                    functools.partial(self.action__toggle_tag, tag=tag)
+                    functools.partial(
+                        self.action__toggle_tag,
+                        tag_name=tag.name,
+                    )
                 )
 
                 context_menu.addAction(action)
@@ -84,13 +74,16 @@ class AnkiQuickTags:
 
                 sub_menu = QMenu("Other Tags...", context_menu)
 
-                for tag in self.other_tags:
+                for tag_name in self.other_tags:
 
-                    action = QAction(tag, sub_menu)
+                    action = QAction(tag_name, sub_menu)
                     action.setCheckable(True)
-                    action.setChecked(self.note.hasTag(tag))
+                    action.setChecked(self.current_note.hasTag(tag_name))
                     action.toggled.connect(
-                        functools.partial(self.action__toggle_tag, tag=tag)
+                        functools.partial(
+                            self.action__toggle_tag,
+                            tag_name=tag_name,
+                        )
                     )
 
                     sub_menu.addAction(action)
@@ -106,14 +99,17 @@ class AnkiQuickTags:
             if state != Key.REVIEW:
                 return
 
-            self.config.load()
+            self.config.reload()
 
-            for (tag, shortcut) in self.config.quick_tags:
+            for tag in self.config.quick_tags:
 
                 shortcuts.append(
                     (
-                        shortcut,
-                        functools.partial(self.action__toggle_tag, tag=tag),
+                        tag.shortcut,
+                        functools.partial(
+                            self.action__toggle_tag,
+                            tag_name=tag.name,
+                        ),
                     )
                 )
 
