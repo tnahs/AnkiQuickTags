@@ -16,24 +16,7 @@ class AnkiQuickTags:
     def __init__(self) -> None:
         self.__config = Config()
 
-    @property
-    def config(self) -> Config:
-        return self.__config
-
-    @property
-    def other_tags(self) -> List[str]:
-
-        all_tags = aqt.mw.col.tags.all()  # type: ignore
-        quick_tags = [tag.name for tag in self.config.quick_tags]
-        other_tags = sorted([tag for tag in all_tags if tag not in quick_tags])
-
-        return other_tags[: self.config.other_tags_limit]
-
-    @property
-    def current_note(self) -> Note:
-        return aqt.mw.reviewer.card.note()  # type: ignore
-
-    def action__toggle_tag(self, tag_name: str) -> None:
+    def __action__toggle_tag(self, tag_name: str) -> None:
 
         if self.current_note.hasTag(tag_name):
             self.current_note.delTag(tag_name)
@@ -45,7 +28,7 @@ class AnkiQuickTags:
         self.current_note.flush()
 
     def setup(self) -> None:
-        def hook__append_context_menu(
+        def __hook__append_context_menu(
             webview: AnkiWebView, context_menu: QMenu
         ) -> None:
 
@@ -63,7 +46,7 @@ class AnkiQuickTags:
                 action.setChecked(self.current_note.hasTag(tag.name))
                 action.toggled.connect(
                     functools.partial(
-                        self.action__toggle_tag,
+                        self.__action__toggle_tag,
                         tag_name=tag.name,
                     )
                 )
@@ -81,7 +64,7 @@ class AnkiQuickTags:
                     action.setChecked(self.current_note.hasTag(tag_name))
                     action.toggled.connect(
                         functools.partial(
-                            self.action__toggle_tag,
+                            self.__action__toggle_tag,
                             tag_name=tag_name,
                         )
                     )
@@ -90,9 +73,9 @@ class AnkiQuickTags:
 
                 context_menu.addMenu(sub_menu)
 
-        aqt.gui_hooks.webview_will_show_context_menu.append(hook__append_context_menu)
+        aqt.gui_hooks.webview_will_show_context_menu.append(__hook__append_context_menu)
 
-        def hook__append_shortcuts(
+        def __hook__append_shortcuts(
             state: str, shortcuts: List[Tuple[str, Callable]]
         ) -> None:
 
@@ -107,10 +90,27 @@ class AnkiQuickTags:
                     (
                         tag.shortcut,
                         functools.partial(
-                            self.action__toggle_tag,
+                            self.__action__toggle_tag,
                             tag_name=tag.name,
                         ),
                     )
                 )
 
-        aqt.gui_hooks.state_shortcuts_will_change.append(hook__append_shortcuts)
+        aqt.gui_hooks.state_shortcuts_will_change.append(__hook__append_shortcuts)
+
+    @property
+    def config(self) -> Config:
+        return self.__config
+
+    @property
+    def other_tags(self) -> List[str]:
+
+        all_tags = aqt.mw.col.tags.all()  # type: ignore
+        quick_tags = [tag.name for tag in self.config.quick_tags]
+        other_tags = sorted([tag for tag in all_tags if tag not in quick_tags])
+
+        return other_tags[: self.config.other_tags_limit]
+
+    @property
+    def current_note(self) -> Note:
+        return aqt.mw.reviewer.card.note()  # type: ignore

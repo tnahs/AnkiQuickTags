@@ -2,7 +2,7 @@
 
 ## Installation
 
-Download `*.ankiaddon` from `./bundle`
+Download and run `bundle/anki-quick-tags.ankiaddon`.
 
 ## Usage
 
