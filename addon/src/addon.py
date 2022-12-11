@@ -1,12 +1,12 @@
 import functools
-from typing import Callable, List, Tuple
+from typing import Callable
 
 import aqt
 import aqt.gui_hooks
 import aqt.utils
 from anki.notes import Note
+from aqt.qt.qt6 import QAction, QMenu
 from aqt.webview import AnkiWebView
-from PyQt5.QtWidgets import QAction, QMenu
 
 from .config import Config
 from .helpers import Key
@@ -18,11 +18,11 @@ class AnkiQuickTags:
 
     def __action__toggle_tag(self, tag_name: str) -> None:
 
-        if self.current_note.hasTag(tag_name):
-            self.current_note.delTag(tag_name)
+        if self.current_note.has_tag(tag_name):
+            self.current_note.remove_tag(tag_name)
             aqt.utils.tooltip(f"Removed '{tag_name}'...")
         else:
-            self.current_note.addTag(tag_name)
+            self.current_note.add_tag(tag_name)
             aqt.utils.tooltip(f"Added '{tag_name}'...")
 
         self.current_note.flush()
@@ -43,7 +43,7 @@ class AnkiQuickTags:
 
                 action = QAction(tag.name, context_menu)
                 action.setCheckable(True)
-                action.setChecked(self.current_note.hasTag(tag.name))
+                action.setChecked(self.current_note.has_tag(tag.name))
                 action.toggled.connect(
                     functools.partial(
                         self.__action__toggle_tag,
@@ -61,7 +61,7 @@ class AnkiQuickTags:
 
                     action = QAction(tag_name, sub_menu)
                     action.setCheckable(True)
-                    action.setChecked(self.current_note.hasTag(tag_name))
+                    action.setChecked(self.current_note.has_tag(tag_name))
                     action.toggled.connect(
                         functools.partial(
                             self.__action__toggle_tag,
@@ -76,7 +76,7 @@ class AnkiQuickTags:
         aqt.gui_hooks.webview_will_show_context_menu.append(__hook__append_context_menu)
 
         def __hook__append_shortcuts(
-            state: str, shortcuts: List[Tuple[str, Callable]]
+            state: str, shortcuts: list[tuple[str, Callable]]
         ) -> None:
 
             if state != Key.REVIEW:
@@ -103,7 +103,7 @@ class AnkiQuickTags:
         return self.__config
 
     @property
-    def other_tags(self) -> List[str]:
+    def other_tags(self) -> list[str]:
 
         all_tags = aqt.mw.col.tags.all()  # type: ignore
         quick_tags = [tag.name for tag in self.config.quick_tags]

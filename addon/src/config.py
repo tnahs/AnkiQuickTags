@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import json
-from typing import Iterator, List, Optional, Tuple
+from collections.abc import Iterator
 
 from .helpers import ConfigError, Defaults, Key
 from .tag import QuickTag
@@ -8,9 +10,9 @@ from .tag import QuickTag
 class Config:
 
     __data = {}
-    __quick_tags: List[QuickTag] = []
+    __quick_tags: list[QuickTag] = []
 
-    def __init__(self, data: Optional[dict] = None) -> None:
+    def __init__(self, data: dict | None = None) -> None:
 
         self.__data = self.__load() if data is None else data
         self.__validate()
@@ -19,7 +21,7 @@ class Config:
     def __load(self) -> dict:
 
         try:
-            with open(Defaults.TAGS_JSON, "r") as f:
+            with open(Defaults.TAGS_JSON) as f:
                 data = json.load(f)
         except FileNotFoundError:
             raise ConfigError(f"Missing {Key.TAGS_JSON} in {Defaults.USER_FILES}.")
@@ -31,7 +33,7 @@ class Config:
     def __validate(self):
         pass
 
-    def __iter_quick_tags(self) -> Iterator[Tuple[str, str]]:
+    def __iter_quick_tags(self) -> Iterator[tuple[str, str]]:
 
         for tag in self.__data.get(Key.QUICK_TAGS, []):
 
@@ -65,7 +67,7 @@ class Config:
         self.__build_quick_tags()
 
     @property
-    def quick_tags(self) -> List[QuickTag]:
+    def quick_tags(self) -> list[QuickTag]:
         return self.__quick_tags
 
     @property
