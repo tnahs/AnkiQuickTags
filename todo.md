@@ -1,4 +1,0 @@
-# TODOs
-
-- Documentation
-- Validate config
