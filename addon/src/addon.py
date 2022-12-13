@@ -7,8 +7,9 @@ import aqt
 import aqt.gui_hooks
 import aqt.utils
 from anki.notes import Note
+from aqt.editor import EditorWebView
+from aqt.main import MainWebView
 from aqt.qt.qt6 import QAction, QMenu
-from aqt.webview import AnkiWebView
 
 from .config import Config
 from .helpers import Key, get_reviewing_note
@@ -23,13 +24,11 @@ class AnkiQuickTags:
         if aqt.mw is None:
             return
 
-        # Context Menu
+        # Context Menus
 
-        def hook__append_context_menu(
-            webview: AnkiWebView, context_menu: QMenu
+        def hook__append_context_menu_reviewer(
+            webview: MainWebView, context_menu: QMenu
         ) -> None:
-            """Appends quick-tags and other-tags sub-menu to the reviewer context-
-            menu."""
 
             if aqt.mw.state != Key.REVIEW:  # type: ignore
                 return
@@ -38,6 +37,45 @@ class AnkiQuickTags:
 
             if note is None:
                 return
+
+            append_context_menu(
+                webview=webview,
+                context_menu=context_menu,
+                note=note,
+            )
+
+        aqt.gui_hooks.webview_will_show_context_menu.append(
+            hook__append_context_menu_reviewer
+        )
+
+        def hook__append_context_menu_editor(
+            webview: EditorWebView, context_menu: QMenu
+        ) -> None:
+
+            if aqt.mw.state != Key.DECK_BROWSER:  # type: ignore
+                return
+
+            note = webview.editor.note
+
+            if note is None:
+                return
+
+            append_context_menu(
+                webview=webview,
+                context_menu=context_menu,
+                note=note,
+            )
+
+        aqt.gui_hooks.editor_will_show_context_menu.append(
+            hook__append_context_menu_editor
+        )
+
+        def append_context_menu(
+            webview: MainWebView | EditorWebView,
+            context_menu: QMenu,
+            note: Note,
+        ) -> None:
+            """Appends quick-tags and other-tags sub-menu to the context-menu."""
 
             self._config.reload()
 
@@ -52,7 +90,7 @@ class AnkiQuickTags:
                     functools.partial(
                         context_action__toggle_tag,
                         tag_name=tag.name,
-                        note=note,
+                        webview=webview,
                     )
                 )
 
@@ -71,15 +109,13 @@ class AnkiQuickTags:
                         functools.partial(
                             context_action__toggle_tag,
                             tag_name=tag.name,
-                            note=note,
+                            webview=webview,
                         )
                     )
 
                     sub_menu.addAction(action)
 
                 context_menu.addMenu(sub_menu)
-
-        aqt.gui_hooks.webview_will_show_context_menu.append(hook__append_context_menu)
 
         # Shortcuts
 
@@ -107,16 +143,26 @@ class AnkiQuickTags:
 
         aqt.gui_hooks.state_shortcuts_will_change.append(hook__bind_shortcuts)
 
-        def context_action__toggle_tag(tag_name: str, note: Note | None = None) -> None:
+        def context_action__toggle_tag(
+            tag_name: str, webview: MainWebView | EditorWebView | None = None
+        ) -> None:
             """Toggles a tag within a Note."""
+
+            note: Note | None = None
 
             # It's not always possible to access the current note when binding this
             # context action. For example, when binding the shortcuts, we cannot access
             # the note as the hook is triggered before a note is selected for review.
             # This provides a way to lazily get the currentl note in those cases.
-            note = note if note is not None else get_reviewing_note()
+            if isinstance(webview, MainWebView):
+                note = get_reviewing_note()
+            elif isinstance(webview, EditorWebView):
+                note = webview.editor.note
+            else:
+                # The shorcut is being bound.
+                note = get_reviewing_note()
 
-            # It's possible that `note` is an Option[Note] here.
+            # It's possible that `note` is still an Option[Note] here.
             if note is None:
                 return
 
@@ -128,3 +174,5 @@ class AnkiQuickTags:
                 aqt.utils.tooltip(f"Added '{tag_name}'...")
 
             note.flush()
+
+            # TODO: Refresh the webview when tags have changed.

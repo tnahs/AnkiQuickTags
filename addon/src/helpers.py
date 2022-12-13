@@ -44,6 +44,7 @@ class ConfigError(Exception):
 class Key:
     """A class defining re-usable strings."""
 
+    DECK_BROWSER = "deckBrowser"
     LIMIT = "limit"
     NAME = "name"
     OTHER_TAGS = "other-tags"
