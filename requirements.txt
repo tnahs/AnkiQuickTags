@@ -1,1 +1,2 @@
 aqt[qt6]
+pytest
