@@ -12,4 +12,4 @@ lines_after_imports = 2
 in-place = true
 recursive = true
 wrap-summaries = 88
-wrap-descriptions = 88
+wrap-descriptions = 0
