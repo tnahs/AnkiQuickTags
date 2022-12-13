@@ -1,7 +1,7 @@
 {
-    "quick-tags": [
+    "tags": [
         {
-            "name": "quick-tag-1",
+            "name": "Tag-01",
             "shortcut": "Ctrl+Alt+T"
         }
     ],

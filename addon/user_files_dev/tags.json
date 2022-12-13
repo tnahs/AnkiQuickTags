@@ -1,0 +1,20 @@
+{
+    "tags": [
+        {
+            "name": "Tag-1",
+            "shortcut": "Ctrl+Alt+1"
+        },
+        {
+            "name": "Tag-2",
+            "shortcut": "Ctrl+Alt+2"
+        },
+        {
+            "name": "Tag-3",
+            "shortcut": "Ctrl+Alt+3"
+        }
+    ],
+    "other-tags": {
+        "visible": true,
+        "limit": 10
+    }
+}

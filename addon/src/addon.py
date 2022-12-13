@@ -9,63 +9,79 @@ from aqt.qt.qt6 import QAction, QMenu
 from aqt.webview import AnkiWebView
 
 from .config import Config
-from .helpers import Key
+from .helpers import Key, get_reviewing_note
 
 
 class AnkiQuickTags:
     def __init__(self) -> None:
-        self.__config = Config()
-
-    def __action__toggle_tag(self, tag_name: str) -> None:
-
-        if self.current_note.has_tag(tag_name):
-            self.current_note.remove_tag(tag_name)
-            aqt.utils.tooltip(f"Removed '{tag_name}'...")
-        else:
-            self.current_note.add_tag(tag_name)
-            aqt.utils.tooltip(f"Added '{tag_name}'...")
-
-        self.current_note.flush()
+        self._config = Config()
 
     def setup(self) -> None:
-        def __hook__append_context_menu(
+
+        if aqt.mw is None:
+            return
+
+        # Context Menu
+
+        def hook__append_context_menu(
             webview: AnkiWebView, context_menu: QMenu
         ) -> None:
+            """Appends quick-tags and other-tags sub-menu to the reviewer context-menu.
+
+            ┌─────────────────┐
+            │ Copy            │
+            │ Inspect         │
+            ├─────────────────┤
+            │ Tag-01          │
+            │ Tag-02          │
+            │ Tag-03          ├─────────────────┐
+            │ Other tags... > │ Other-Tag-A     │
+            └─────────────────┤ Other-Tag-B     │
+                              │ Other-Tag-C     │
+                              └─────────────────┘
+            """
 
             if aqt.mw.state != Key.REVIEW:  # type: ignore
                 return
 
-            self.config.reload()
+            note = get_reviewing_note()
+
+            if note is None:
+                return
+
+            self._config.reload()
 
             context_menu.addSeparator()
 
-            for tag in self.config.quick_tags:
+            for tag in self._config.quick_tags:
 
                 action = QAction(tag.name, context_menu)
                 action.setCheckable(True)
-                action.setChecked(self.current_note.has_tag(tag.name))
+                action.setChecked(note.has_tag(tag.name))
                 action.toggled.connect(
                     functools.partial(
-                        self.__action__toggle_tag,
+                        context_action__toggle_tag,
+                        note=note,
                         tag_name=tag.name,
                     )
                 )
 
                 context_menu.addAction(action)
 
-            if self.config.other_tags_visible:
+            if self._config.other_tags_are_visible:
 
-                sub_menu = QMenu("Other Tags...", context_menu)
+                sub_menu = QMenu("Other tags...", context_menu)
 
-                for tag_name in self.other_tags:
+                for tag in self._config.other_tags:
 
-                    action = QAction(tag_name, sub_menu)
+                    action = QAction(tag.name, sub_menu)
                     action.setCheckable(True)
-                    action.setChecked(self.current_note.has_tag(tag_name))
+                    action.setChecked(note.has_tag(tag.name))
                     action.toggled.connect(
                         functools.partial(
-                            self.__action__toggle_tag,
-                            tag_name=tag_name,
+                            context_action__toggle_tag,
+                            note=note,
+                            tag_name=tag.name,
                         )
                     )
 
@@ -73,44 +89,48 @@ class AnkiQuickTags:
 
                 context_menu.addMenu(sub_menu)
 
-        aqt.gui_hooks.webview_will_show_context_menu.append(__hook__append_context_menu)
+        aqt.gui_hooks.webview_will_show_context_menu.append(hook__append_context_menu)
 
-        def __hook__append_shortcuts(
+        # Shortcuts
+
+        def hook__append_shortcuts(
             state: str, shortcuts: list[tuple[str, Callable]]
         ) -> None:
+            """Appends quick-tag shortcuts while in the reviewing state."""
 
             if state != Key.REVIEW:
                 return
 
-            self.config.reload()
+            note = get_reviewing_note()
 
-            for tag in self.config.quick_tags:
+            if note is None:
+                return
+
+            self._config.reload()
+
+            for tag in self._config.quick_tags:
 
                 shortcuts.append(
                     (
                         tag.shortcut,
                         functools.partial(
-                            self.__action__toggle_tag,
+                            context_action__toggle_tag,
+                            note=note,
                             tag_name=tag.name,
                         ),
                     )
                 )
 
-        aqt.gui_hooks.state_shortcuts_will_change.append(__hook__append_shortcuts)
+        aqt.gui_hooks.state_shortcuts_will_change.append(hook__append_shortcuts)
 
-    @property
-    def config(self) -> Config:
-        return self.__config
+        def context_action__toggle_tag(note: Note, tag_name: str) -> None:
+            """Toggles a tag within a Note."""
 
-    @property
-    def other_tags(self) -> list[str]:
+            if note.has_tag(tag_name):
+                note.remove_tag(tag_name)
+                aqt.utils.tooltip(f"Removed '{tag_name}'...")
+            else:
+                note.add_tag(tag_name)
+                aqt.utils.tooltip(f"Added '{tag_name}'...")
 
-        all_tags = aqt.mw.col.tags.all()  # type: ignore
-        quick_tags = [tag.name for tag in self.config.quick_tags]
-        other_tags = sorted([tag for tag in all_tags if tag not in quick_tags])
-
-        return other_tags[: self.config.other_tags_limit]
-
-    @property
-    def current_note(self) -> Note:
-        return aqt.mw.reviewer.card.note()  # type: ignore
+            note.flush()

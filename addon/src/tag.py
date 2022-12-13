@@ -2,6 +2,8 @@ from dataclasses import dataclass
 
 
 @dataclass
-class QuickTag:
+class Tag:
+    """A class representing a tag."""
+
     name: str
     shortcut: str
