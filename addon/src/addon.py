@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import functools
 from typing import Callable
 
@@ -26,20 +28,8 @@ class AnkiQuickTags:
         def hook__append_context_menu(
             webview: AnkiWebView, context_menu: QMenu
         ) -> None:
-            """Appends quick-tags and other-tags sub-menu to the reviewer context-menu.
-
-            ┌─────────────────┐
-            │ Copy            │
-            │ Inspect         │
-            ├─────────────────┤
-            │ Tag-01          │
-            │ Tag-02          │
-            │ Tag-03          ├─────────────────┐
-            │ Other tags... > │ Other-Tag-A     │
-            └─────────────────┤ Other-Tag-B     │
-                              │ Other-Tag-C     │
-                              └─────────────────┘
-            """
+            """Appends quick-tags and other-tags sub-menu to the reviewer context-
+            menu."""
 
             if aqt.mw.state != Key.REVIEW:  # type: ignore
                 return
@@ -61,8 +51,8 @@ class AnkiQuickTags:
                 action.toggled.connect(
                     functools.partial(
                         context_action__toggle_tag,
-                        note=note,
                         tag_name=tag.name,
+                        note=note,
                     )
                 )
 
@@ -80,8 +70,8 @@ class AnkiQuickTags:
                     action.toggled.connect(
                         functools.partial(
                             context_action__toggle_tag,
-                            note=note,
                             tag_name=tag.name,
+                            note=note,
                         )
                     )
 
@@ -93,17 +83,12 @@ class AnkiQuickTags:
 
         # Shortcuts
 
-        def hook__append_shortcuts(
+        def hook__bind_shortcuts(
             state: str, shortcuts: list[tuple[str, Callable]]
         ) -> None:
-            """Appends quick-tag shortcuts while in the reviewing state."""
+            """Binds quick-tag shortcuts while reviewing cards."""
 
             if state != Key.REVIEW:
-                return
-
-            note = get_reviewing_note()
-
-            if note is None:
                 return
 
             self._config.reload()
@@ -115,16 +100,25 @@ class AnkiQuickTags:
                         tag.shortcut,
                         functools.partial(
                             context_action__toggle_tag,
-                            note=note,
                             tag_name=tag.name,
                         ),
                     )
                 )
 
-        aqt.gui_hooks.state_shortcuts_will_change.append(hook__append_shortcuts)
+        aqt.gui_hooks.state_shortcuts_will_change.append(hook__bind_shortcuts)
 
-        def context_action__toggle_tag(note: Note, tag_name: str) -> None:
+        def context_action__toggle_tag(tag_name: str, note: Note | None = None) -> None:
             """Toggles a tag within a Note."""
+
+            # It's not always possible to access the current note when binding this
+            # context action. For example, when binding the shortcuts, we cannot access
+            # the note as the hook is triggered before a note is selected for review.
+            # This provides a way to lazily get the currentl note in those cases.
+            note = note if note is not None else get_reviewing_note()
+
+            # It's possible that `note` is an Option[Note] here.
+            if note is None:
+                return
 
             if note.has_tag(tag_name):
                 note.remove_tag(tag_name)
