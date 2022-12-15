@@ -2,11 +2,9 @@
 
 Tag your Anki cards quickly!
 
-<!--
 ## Installation
 
 Download and run the latest [`AnkiQuickTags.ankiaddon`][releases] release.
--->
 
 ## Usage
 
