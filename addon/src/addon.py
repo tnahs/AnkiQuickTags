@@ -149,17 +149,28 @@ class AnkiQuickTags:
             """Toggles a tag within a Note."""
 
             note: Note | None = None
+            refresh: Callable | None = None
 
             # It's not always possible to access the current note when binding this
-            # context action. For example, when binding the shortcuts, we cannot access
-            # the note as the hook is triggered before a note is selected for review.
-            # This provides a way to lazily get the currentl note in those cases.
+            # context action. For example, when binding shortcuts, we cannot access
+            # the Note as the hook to bind them is triggered before Note is selected
+            # for review.
+
+            # User is reviewing cards.
             if isinstance(webview, MainWebView):
                 note = get_reviewing_note()
+                refresh = aqt.mw.reviewer._redraw_current_card  # type: ignore
+
+            # User is editing cards.
             elif isinstance(webview, EditorWebView):
                 note = webview.editor.note
+                refresh = functools.partial(
+                    webview.editor.set_note,
+                    note=note,
+                )
+
+            # A shorcut is being bound.
             else:
-                # The shorcut is being bound.
                 note = get_reviewing_note()
 
             # It's possible that `note` is still an Option[Note] here.
@@ -175,4 +186,5 @@ class AnkiQuickTags:
 
             note.flush()
 
-            # TODO: Refresh the webview when tags have changed.
+            if refresh is not None:
+                refresh()
