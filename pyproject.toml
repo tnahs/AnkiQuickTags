@@ -1,6 +1,6 @@
 [project]
 name = "AnkiQuickTags"
-description = ""
+description = "Tag your Anki cards quickly!"
 version = "0.3.0"
 authors = [{ name = "Shant Ergenian", email = "shaaant@pm.me" }]
 
