@@ -20,9 +20,14 @@ class AnkiQuickTags:
         self._config = Config()
 
     def setup(self) -> None:
+        """Registers the add-on's hooks used to append context-menus and shortcuts."""
 
         if aqt.mw is None:
             return
+
+        # The following functions are nested to prevent the need for declaring `self` as
+        # the first argument in order to maintain the correct function signature while
+        # still being able to access `self`.
 
         # Context Menus
 
