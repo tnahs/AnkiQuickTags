@@ -1,7 +1,7 @@
 [project]
 name = "AnkiQuickTags"
 description = "Tag your Anki cards quickly!"
-version = "0.3.0"
+version = "0.3.1"
 authors = [{ name = "Shant Ergenian", email = "shaaant@pm.me" }]
 
 [tool.isort]
