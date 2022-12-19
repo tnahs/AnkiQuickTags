@@ -70,6 +70,10 @@ of other-tags can be limited via the add-on's configuration.
                   └───────────────┘
 ```
 
+## Example Config
+
+An example config can be found at: [tnahs/anki-addon-configs:AnkiQuickTags][anki-quick-tags-config].
+
 ## Development
 
 1. Install the required `[python-version]`. See the [Anki development][anki-dev]
@@ -129,6 +133,7 @@ of other-tags can be limited via the add-on's configuration.
     anki
     ```
 
+[anki-quick-tags-config]: https://github.com/tnahs/anki-addon-configs/tree/AnkiQuickTags
 [anki-dev]: https://github.com/ankitects/anki/blob/main/docs/development.md
 [env-var]: https://github.com/ankitects/anki/blob/main/docs/development.md#environmental-variables
 [releases]: https://github.com/tnahs/AnkiQuickTags/releases
