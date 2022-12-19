@@ -20,7 +20,7 @@ class AnkiQuickTags:
         self._config = Config()
 
     def setup(self) -> None:
-        """Registers the add-on's hooks used to append context-menus and shortcuts."""
+        """Registers hooks which append context-menus and shortcuts."""
 
         if aqt.mw is None:
             return
